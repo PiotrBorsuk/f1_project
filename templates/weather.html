@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Flask Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Flask Website</h1>
+    </header>
+    <main>
+        <img src="{{ url_for('static', filename='track_layout.png') }}" alt="Example Image">
+        <h2>This is a subheading</h2>
+        <p>This is a simple Flask website with an image, header, and h2 element.</p>
+    </main>
+</body>
+</html>

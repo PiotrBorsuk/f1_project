@@ -1,0 +1,71 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Data Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+        }
+        select {
+            margin: 10px;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .flash {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .error {
+            background-color: #ffcccc;
+            border: 1px solid #ff0000;
+        }
+        .info {
+            background-color: #e6f3ff;
+            border: 1px solid #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>F1 Data Selector</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="post">
+        <select name="year" required>
+            <option value="">Select Year</option>
+            {% for year in years %}
+            <option value="{{ year }}">{{ year }}</option>
+            {% endfor %}
+        </select>
+        <select name="country" required>
+            <option value="">Select Country</option>
+            {% for country in countries %}
+            <option value="{{ country }}">{{ country }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Show Data</button>
+    </form>
+    <a href="{{ url_for('weather') }}">View Weather</a>
+</body>
+</html>

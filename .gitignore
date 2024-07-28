@@ -1,2 +1,4 @@
 .venv
 # \tests
+secret_keys.py
+__pycache__

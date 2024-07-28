@@ -1,0 +1,53 @@
+<!-- templates/result.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Data Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>F1 Data Result</h1>
+    {% if data %}
+        <table>
+            <tr>
+                <th>Year</th>
+                <th>Country</th>
+                <th>Meeting Name</th>
+                <th>Date Start</th>
+            </tr>
+            {% for row in data %}
+            <tr>
+                <td>{{ row.year }}</td>
+                <td>{{ row.country_name }}</td>
+                <td>{{ row.meeting_name }}</td>
+                <td>{{ row.date_start }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No data available for the selected criteria.</p>
+    {% endif %}
+    <a href="{{ url_for('home') }}">Back to selection</a>
+</body>
+</html>
