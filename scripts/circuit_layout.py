@@ -38,3 +38,6 @@ def fetch_track_img(year: int, track: str):
             print("Div with specified class not found")
     else:
         print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+
+
+        

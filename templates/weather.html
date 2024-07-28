@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Flask Website</title>
+    <title>F1 Weather - {{ meeting_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,20 +13,39 @@
             padding: 20px;
             text-align: center;
         }
-        img {
-            max-width: 100%;
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .track-layout {
+            max-width: 800px;
+            max-height: 600px;
+            width: 100%;
             height: auto;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Welcome to My Flask Website</h1>
+        <h1>{{ meeting_name }}</h1>
+        <h2>{{ circuit_name }}</h2>
+        <p>{{ year }} {{ country }}</p>
     </header>
+    
     <main>
-        <img src="{{ url_for('static', filename='track_layout.png') }}" alt="Example Image">
-        <h2>This is a subheading</h2>
-        <p>This is a simple Flask website with an image, header, and h2 element.</p>
+        <img class="track-layout" src="{{ url_for('static', filename='track_layout.png') }}" alt="Circuit layout">
     </main>
+    
+    <footer>
+        <a href="{{ url_for('home') }}">Back to Home</a>
+    </footer>
 </body>
 </html>
