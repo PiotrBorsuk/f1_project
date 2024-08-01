@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
-from scripts.circuit_layout import fetch_track_img, limit_image_dimensions
+from scripts.circuit_layout import fetch_track_img
 from scripts.meetings_data import fetch_meetings_data
+from scripts.sessions_info import fetch_session_data
 from secret_keys import flask_key
 
 
@@ -15,7 +16,7 @@ def home():
 
     if general_info is None or general_info.empty:
         general_info = fetch_meetings_data()
-    
+            
     if general_info.empty:
         flash("Unable to retrieve F1 data. Please try again later.", "error")
         return render_template('index.html', years=[], countries=[])
@@ -54,6 +55,7 @@ def weather():
         try:
             year = int(year)
             fetch_track_img(year, country.lower())
+            fetch_session_data(year, country.lower())
             return render_template('weather.html', 
                                    year=year, 
                                    country=country, 
