@@ -2,7 +2,10 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from scripts.circuit_layout import fetch_track_img
 from scripts.meetings_data import fetch_meetings_data
 from scripts.sessions_info import fetch_session_data
+from scripts.driver_position import fetch_driver_position
+from scripts.driver_info import fetch_driver_info
 from secret_keys import flask_key
+import pandas as pd
 
 
 app = Flask(__name__)
@@ -35,16 +38,16 @@ def home():
             flash(f"No data available for {selected_country} in {selected_year}", "info")
             return render_template('index.html', years=years, countries=countries)
         
-        return redirect(url_for('weather', 
+        return redirect(url_for('race_info',
                                 year=selected_year, 
                                 country=selected_country, 
                                 meeting=meeting_name, 
                                 circuit=circuit_name))
-    
+
     return render_template('index.html', years=years, countries=countries)
 
-@app.route('/weather')
-def weather():
+@app.route('/race_info')
+def race_info():
     year = request.args.get('year')
     country = request.args.get('country')
     meeting_name = request.args.get('meeting')
@@ -55,8 +58,11 @@ def weather():
         try:
             year = int(year)
             fetch_track_img(year, country.lower())
-            fetch_session_data(year, country.lower())
-            return render_template('weather.html', 
+            meeting_key, session_key = fetch_session_data(year, country)
+            positions = fetch_driver_position(meeting_key, session_key)
+            positions = pd.merge(positions, fetch_driver_info(session_key), on='driver_number', how='inner')
+            print(positions.head())
+            return render_template('race_info.html',
                                    year=year, 
                                    country=country, 
                                    meeting_name=meeting_name, 
