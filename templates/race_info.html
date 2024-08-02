@@ -12,11 +12,27 @@
             margin: 0;
             padding: 5px;
         }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .table-container {
+            flex: 0 0 auto;
+            margin-right: 10px;
+        }
+        .image-container {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+        }
         table {
             border-collapse: collapse;
             width: 100%;
             max-width: 80px;
-            margin: 5px auto;
+            margin: 5px 0;
             background-color: #333;
             color: white;
             font-size: 12px;
@@ -49,10 +65,9 @@
             font-size: 1em;
         }
         img {
-            display: block;
-            margin: 5px auto;
             max-width: 100%;
             height: auto;
+            object-fit: contain;
         }
         a {
             display: block;
@@ -70,24 +85,29 @@
     <h2>{{ circuit_name }}</h2>
     <p style="text-align: center; margin: 2px 0; font-size: 0.9em;">{{ year }} {{ country }}</p>
 
-    <img src="{{ url_for('static', filename='track_layout.png') }}" alt="Circuit layout">
-
-    <h3>Driver Positions</h3>
-    {% if positions %}
-        <table>
-            <tbody>
-                {% for driver in positions %}
-                <tr>
-                    <td class="position">{{ driver.position }}</td>
-                    <td class="name">{{ driver.name_acronym }}</td>
-                    <td class="team-color" style="background-color: #{{ driver.team_colour if not driver.team_colour.startswith('#') else driver.team_colour[1:] }};"></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No position data available.</p>
-    {% endif %}
+    <div class="container">
+        <div class="table-container">
+            <h3>Driver Positions</h3>
+            {% if positions %}
+                <table>
+                    <tbody>
+                        {% for driver in positions %}
+                        <tr>
+                            <td class="position">{{ driver.position }}</td>
+                            <td class="name">{{ driver.name_acronym }}</td>
+                            <td class="team-color" style="background-color: #{{ driver.team_colour if not driver.team_colour.startswith('#') else driver.team_colour[1:] }};"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No position data available.</p>
+            {% endif %}
+        </div>
+        <div class="image-container">
+            <img src="{{ url_for('static', filename='track_layout.png') }}" alt="Circuit layout">
+        </div>
+    </div>
 
     <a href="{{ url_for('home') }}">Back to Home</a>
 </body>
