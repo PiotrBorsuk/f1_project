@@ -15,49 +15,49 @@
         .container {
             display: flex;
             justify-content: space-between;
-            align-items: stretch;
-            max-width: 600px;
+            align-items: flex-start;
+            max-width: 800px;
             margin: 0 auto;
         }
         .table-container {
-            flex: 0 0 auto;
+            flex: 0 0 45%;
             margin-right: 10px;
         }
         .image-container {
-            flex: 1 1 auto;
-            display: flex;
-            align-items: center;
+            flex: 0 0 45%;
+            position: relative;
         }
         table {
             border-collapse: collapse;
             width: 100%;
-            max-width: 80px;
-            margin: 5px 0;
             background-color: #333;
             color: white;
             font-size: 12px;
         }
         td {
             border: 1px solid #555;
-            padding: 2px 4px;
+            padding: 4px 6px;
             text-align: left;
             font-weight: bold;
         }
         tr:nth-child(even) {
             background-color: #444;
         }
+        tr:nth-child(odd) {
+            background-color: #3a3a3a;
+        }
         .position {
             width: 20px;
             text-align: center;
         }
         .name {
-            max-width: 30px;
+            max-width: 80px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .team-color {
-            width: 3px;
+            width: 5px;
         }
         h1, h2, h3 {
             text-align: center;
@@ -65,9 +65,12 @@
             font-size: 1em;
         }
         img {
-            max-width: 100%;
-            height: auto;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         a {
             display: block;
@@ -78,6 +81,14 @@
             font-weight: bold;
             font-size: 0.9em;
         }
+        .slider-container {
+            margin: 10px 0;
+            text-align: center;
+        }
+        #dateSlider {
+            width: 100%;
+            max-width: 300px;
+        }
     </style>
 </head>
 <body>
@@ -85,24 +96,19 @@
     <h2>{{ circuit_name }}</h2>
     <p style="text-align: center; margin: 2px 0; font-size: 0.9em;">{{ year }} {{ country }}</p>
 
+    <div class="slider-container">
+        <input type="range" id="dateSlider" min="{{ min_date }}" max="{{ max_date }}" value="{{ max_date }}">
+        <p id="dateDisplay"></p>
+    </div>
+
     <div class="container">
         <div class="table-container">
             <h3>Driver Positions</h3>
-            {% if positions %}
-                <table>
-                    <tbody>
-                        {% for driver in positions %}
-                        <tr>
-                            <td class="position">{{ driver.position }}</td>
-                            <td class="name">{{ driver.name_acronym }}</td>
-                            <td class="team-color" style="background-color: #{{ driver.team_colour if not driver.team_colour.startswith('#') else driver.team_colour[1:] }};"></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>No position data available.</p>
-            {% endif %}
+            <table id="positionsTable">
+                <tbody>
+                    <!-- Table body will be populated dynamically -->
+                </tbody>
+            </table>
         </div>
         <div class="image-container">
             <img src="{{ url_for('static', filename='track_layout.png') }}" alt="Circuit layout">
@@ -110,5 +116,56 @@
     </div>
 
     <a href="{{ url_for('home') }}">Back to Home</a>
+
+    <script>
+        const slider = document.getElementById('dateSlider');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const table = document.getElementById('positionsTable');
+        const imageContainer = document.querySelector('.image-container');
+        const positions = {{ positions | tojson | safe }};
+
+        slider.addEventListener('input', updateTable);
+
+        function updateTable() {
+            const currentDate = parseInt(slider.value);
+            dateDisplay.textContent = new Date(currentDate).toLocaleString();
+
+            fetch('/get_positions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    date: currentDate,
+                    positions: positions
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tbody = table.querySelector('tbody');
+                tbody.innerHTML = '';
+                data.forEach(driver => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="position">${driver.position}</td>
+                        <td class="name">${driver.name_acronym}</td>
+                        <td class="team-color" style="background-color: #${driver.team_colour};"></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                adjustImageHeight();
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function adjustImageHeight() {
+            const tableHeight = table.offsetHeight;
+            imageContainer.style.height = `${tableHeight}px`;
+        }
+
+        window.addEventListener('resize', adjustImageHeight);
+
+        updateTable(); // Initial update
+    </script>
 </body>
 </html>

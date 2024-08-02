@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from scripts.circuit_layout import fetch_track_img
 from scripts.meetings_data import fetch_meetings_data
 from scripts.sessions_info import fetch_session_data
@@ -6,6 +6,7 @@ from scripts.driver_position import fetch_driver_position
 from scripts.driver_info import fetch_driver_info
 from secret_keys import flask_key
 import pandas as pd
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = flask_key
@@ -32,12 +33,13 @@ def home():
         selected_country = request.form['country']
         filtered_data = general_info[
             (general_info['year'] == selected_year) & (general_info['country_name'] == selected_country)]
-        meeting_name = filtered_data['meeting_name'].iloc[0]
-        circuit_name = filtered_data['circuit_short_name'].iloc[0]
 
         if filtered_data.empty:
             flash(f"No data available for {selected_country} in {selected_year}", "info")
             return render_template('index.html', years=years, countries=countries)
+
+        meeting_name = filtered_data['meeting_name'].iloc[0]
+        circuit_name = filtered_data['circuit_short_name'].iloc[0]
 
         return redirect(url_for('race_info',
                                 year=selected_year,
@@ -62,9 +64,20 @@ def race_info():
             meeting_key, session_key = fetch_session_data(year, country)
             positions = fetch_driver_position(meeting_key, session_key)
             positions = pd.merge(positions, fetch_driver_info(session_key), on='driver_number', how='inner')
-            # Sort positions by position and take the first 20 rows
-            positions = positions.sort_values('date').head(20)
-            positions = positions.sort_values('position')
+
+            # Ensure 'date' is in datetime format
+            positions['date'] = pd.to_datetime(positions['date'])
+
+            # Sort positions by date
+            positions = positions.sort_values('date')
+
+            # Convert timestamp to milliseconds for JavaScript
+            positions['date_ms'] = positions['date'].astype(int) // 10 ** 6
+
+            # Get min and max dates
+            min_date = positions['date_ms'].min()
+            max_date = positions['date_ms'].max()
+
             # Convert positions DataFrame to a list of dictionaries for easy rendering in the template
             positions_list = positions.to_dict('records')
 
@@ -73,13 +86,37 @@ def race_info():
                                    country=country,
                                    meeting_name=meeting_name,
                                    circuit_name=circuit_name,
-                                   positions=positions_list)
+                                   positions=positions_list,
+                                   min_date=min_date,
+                                   max_date=max_date)
         except Exception as e:
             flash(f"Error fetching race information: {str(e)}", "error")
             return redirect(url_for('home'))
     else:
         flash("Please select a year and country first.", "info")
         return redirect(url_for('home'))
+
+
+@app.route('/get_positions', methods=['POST'])
+def get_positions():
+    data = request.json
+    date = data.get('date')
+    positions = data.get('positions', [])
+
+    # Filter positions up to the given date
+    filtered_positions = [p for p in positions if p['date_ms'] <= date]
+
+    # Get the latest position for each driver
+    latest_positions = {}
+    for pos in filtered_positions:
+        driver = pos['driver_number']
+        if driver not in latest_positions or pos['date_ms'] > latest_positions[driver]['date_ms']:
+            latest_positions[driver] = pos
+
+    # Sort by position
+    sorted_positions = sorted(latest_positions.values(), key=lambda x: x['position'])
+
+    return jsonify(sorted_positions)
 
 
 if __name__ == '__main__':
