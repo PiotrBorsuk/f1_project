@@ -3,49 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Race Info - {{ meeting_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Race Information</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
+            background-color: #f0f0f0;
+            color: #333;
             margin: 0;
-            padding: 20px;
-            text-align: center;
+            padding: 5px;
         }
         table {
-            margin: 20px auto;
             border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .track-layout {
-            max-width: 800px;
-            max-height: 600px;
             width: 100%;
+            max-width: 80px;
+            margin: 5px auto;
+            background-color: #333;
+            color: white;
+            font-size: 12px;
+        }
+        td {
+            border: 1px solid #555;
+            padding: 2px 4px;
+            text-align: left;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #444;
+        }
+        .position {
+            width: 20px;
+            text-align: center;
+        }
+        .name {
+            max-width: 30px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .team-color {
+            width: 3px;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            margin: 5px 0;
+            font-size: 1em;
+        }
+        img {
+            display: block;
+            margin: 5px auto;
+            max-width: 100%;
             height: auto;
-            object-fit: contain;
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>{{ meeting_name }}</h1>
-        <h2>{{ circuit_name }}</h2>
-        <p>{{ year }} {{ country }}</p>
-    </header>
-    
-    <main>
-        <img class="track-layout" src="{{ url_for('static', filename='track_layout.png') }}" alt="Circuit layout">
-    </main>
-    
-    <footer>
-        <a href="{{ url_for('home') }}">Back to Home</a>
-    </footer>
+    <h1>{{ meeting_name }}</h1>
+    <h2>{{ circuit_name }}</h2>
+    <p style="text-align: center; margin: 2px 0; font-size: 0.9em;">{{ year }} {{ country }}</p>
+
+    <img src="{{ url_for('static', filename='track_layout.png') }}" alt="Circuit layout">
+
+    <h3>Driver Positions</h3>
+    {% if positions %}
+        <table>
+            <tbody>
+                {% for driver in positions %}
+                <tr>
+                    <td class="position">{{ driver.position }}</td>
+                    <td class="name">{{ driver.name_acronym }}</td>
+                    <td class="team-color" style="background-color: #{{ driver.team_colour if not driver.team_colour.startswith('#') else driver.team_colour[1:] }};"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No position data available.</p>
+    {% endif %}
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
 </body>
 </html>
